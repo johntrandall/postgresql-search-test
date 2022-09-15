@@ -27,4 +27,18 @@ class FruitTest < ActiveSupport::TestCase
 
     assert_equal Fruit.search_by_all_human_readable_text("worm"), [red_apple, mini_best]
   end
+
+  test "weighted by column search works" do
+    Fruit.create!(name: "worm in name WEIGHT A", color: "green", description: "large, round, yummy")
+    Fruit.create!(name: "in description WEIGHT B", color: "red", description: "half a worm in me")
+    Fruit.create!(name: "3x in description", color: "red", description: "worm, worm, worm")
+    Fruit.create!(name: "in color WEIGHT C", color: "worm brown", description: "large, round, yummy")
+    Fruit.create!(name: "2x in color and description", color: "worm brown", description: "large, round, with a worm")
+
+    assert_equal Fruit.search_by_all_human_readable_text("worm").map(&:name), ["3x in description",
+                                                                               "2x in color and description",
+                                                                               "worm in name WEIGHT A",
+                                                                               "in description WEIGHT B",
+                                                                               "in color WEIGHT C"]
+  end
 end

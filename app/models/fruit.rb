@@ -12,6 +12,8 @@
 class Fruit < ApplicationRecord
   include PgSearch::Model
   pg_search_scope :search_by_all_human_readable_text, against: [:description, :name, :color]
-
+  pg_search_scope :search_by_text_weighted, against: { name: 'A',
+                                                       description: 'B',
+                                                       color: 'C' }
   has_many :vehicles
 end
