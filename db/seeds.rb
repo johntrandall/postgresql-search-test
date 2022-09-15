@@ -19,8 +19,8 @@ Fruit.create!(name: "bannana", color: "yellow", description: "yummy")
 Fruit.create!(name: "bannana", color: "brown", description: "gross")
 Fruit.create!(name: "bannana", color: "brown", description: "i dare you")
 
-apple_alpha.vehicles << Vehicle.create(name: "blue dragon", description: "john's first car - blue minivan for band gear")
-apple_alpha.vehicles << Vehicle.create(name: "green monster", description: "john's second car - roof was pulled out")
+apple_alpha.vehicles << Vehicle.create(name: "blue dragon", description: "john's first car - blue minivan for band gear", wheel_description: 'awesome, with skulls')
+apple_alpha.vehicles << Vehicle.create(name: "green monster", description: "john's second car - roof was pulled out", wheel_description: 'retro, with whitewalls, but they got stained blue')
 
 
 

@@ -15,5 +15,9 @@
 #  index_vehicles_on_fruit_id  (fruit_id)
 #
 class Vehicle < ApplicationRecord
+  include PgSearch::Model
+
   belongs_to :fruit
+
+  multisearchable against: [:name, :description, :wheel_description]
 end
