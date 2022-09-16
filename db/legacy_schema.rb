@@ -18,9 +18,13 @@ ActiveRecord::Schema.define(version: 2022_09_16_175123) do
   create_table "super_heros", force: :cascade do |t|
     t.string "name"
     t.string "superpower"
+    t.bigint "god_object_id"
     t.bigint "vehicle_id"
+    t.bigint "fruit_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["fruit_id"], name: "index_super_heros_on_fruit_id"
+    t.index ["god_object_id"], name: "index_super_heros_on_god_object_id"
     t.index ["vehicle_id"], name: "index_super_heros_on_vehicle_id"
   end
 

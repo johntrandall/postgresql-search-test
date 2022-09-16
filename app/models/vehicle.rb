@@ -20,7 +20,9 @@ class Vehicle < ApplicationRecord
   include PgSearch::Model
 
   belongs_to :god_object, optional: true
-  belongs_to :fruit
+  belongs_to :fruit, optional: true
+  has_many :super_heroes
+
 
   multisearchable(against: [:name, :description, :wheel_description],
                   additional_attributes: -> (vehicle) { { god_object_id: vehicle.god_object_id,
