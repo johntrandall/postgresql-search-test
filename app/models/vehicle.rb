@@ -23,5 +23,8 @@ class Vehicle < ApplicationRecord
   belongs_to :fruit
 
   multisearchable(against: [:name, :description, :wheel_description],
-                  additional_attributes: -> (vehicle) { { god_object_id: vehicle.god_object_id, } })
+                  additional_attributes: -> (vehicle) { { god_object_id: vehicle.god_object_id,
+                                                          fruit_id: vehicle.fruit_id
+                  } }
+  )
 end

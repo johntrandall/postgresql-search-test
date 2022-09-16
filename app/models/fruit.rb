@@ -20,7 +20,7 @@ class Fruit < ApplicationRecord
   belongs_to :god_object, optional: true
   has_many :vehicles
 
-  has_many :vehicles
+  has_many :pg_search_documents_with_fruit_id, class_name: PgSearch::Document.name, foreign_key: :fruit_id
 
   pg_search_scope :search_by_all_human_readable_text, against: [:description, :name, :color]
   pg_search_scope :search_by_text_weighted, against: { name: 'A',
@@ -28,5 +28,8 @@ class Fruit < ApplicationRecord
                                                        color: 'C' }
 
   multisearchable(against: [:name, :description, :color],
-                  additional_attributes: -> (fruit) { { god_object_id: fruit.god_object_id } })
+                  additional_attributes: -> (fruit) { { god_object_id: fruit.god_object_id,
+                                                        fruit_id: fruit.id
+                  } }
+  )
 end

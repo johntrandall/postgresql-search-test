@@ -104,6 +104,45 @@ class FruitTest < ActiveSupport::TestCase
     # does not contain, "apple_blue", because that belongs to thor, not zeus
   end
 
+  test 'use associated attribute to have performant search on associated records' do
+    multi_search_setup
+
+    pg_search_documents_blue = PgSearch.multisearch("blue")
+                                       .where(god_object_id: @zeus.id)
+    fruit_with_blue = Fruit.joins(:pg_search_documents_with_fruit_id)
+                           .where(pg_search_documents_with_fruit_id: { fruit_id: pg_search_documents_blue.select(:fruit_id) })
+                           .distinct
+
+    fruit_with_blue_fruit = Fruit.joins(:pg_search_documents_with_fruit_id)
+                                 .where(pg_search_documents_with_fruit_id: { fruit_id: pg_search_documents_blue
+                                                                                         .where(searchable_type: Fruit.name)
+                                                                                         .select(:fruit_id)
+                                 })
+                                 .distinct
+
+    fruit_with_blue_vehicles = Fruit.joins(:pg_search_documents_with_fruit_id)
+                                    .where(pg_search_documents_with_fruit_id: { fruit_id: pg_search_documents_blue
+                                                                                            .where(searchable_type: Vehicle.name)
+                                                                                            .select(:fruit_id),
+                                    })
+                                    .distinct
+
+    assert_equal ["apple_alpha_has_vehicles", "apple_sky_blue"], fruit_with_blue.map(&:name)
+    assert_equal ["apple_sky_blue"], fruit_with_blue_fruit.map(&:name)
+    assert_equal ["apple_alpha_has_vehicles"], fruit_with_blue_vehicles.map(&:name)
+
+    # With Sorting (not the same as ranking)
+    Fruit.joins(:pg_search_documents_with_fruit_id)
+            .where(pg_search_documents_with_fruit_id: { fruit_id: pg_search_documents_blue.select(:fruit_id) })
+            .order("pg_search_documents_with_fruit_id.searchable_type").map(&:name).uniq
+
+    # TODO(JR) - this group isn't right. John needs to learn AR/SQL better
+    # # With grouping
+    # Fruit.joins(:pg_search_documents_with_fruit_id)
+    #             .where(pg_search_documents_with_fruit_id: { fruit_id: pg_search_documents_blue.select(:fruit_id) })
+    #             .group("pg_search_documents_with_fruit_id.searchable_type")
+  end
+
   def multi_search_setup
     @zeus = GodObject.create!(name: "zeus")
     @thor = GodObject.create!(name: "thor")
@@ -129,8 +168,7 @@ class FruitTest < ActiveSupport::TestCase
       apple_blue = Fruit.create!(name: "apple_blue", color: "blue", description: "two bites, half a worm"),
     ]
 
-    apple_alpha_has_vehicles.vehicles << blue_dragon
-    apple_alpha_has_vehicles.vehicles << green_monster
+    apple_alpha_has_vehicles.vehicles << [blue_dragon, green_monster]
   end
 
 end
