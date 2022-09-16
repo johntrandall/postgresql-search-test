@@ -2,15 +2,23 @@
 #
 # Table name: fruits
 #
-#  id          :bigint           not null, primary key
-#  color       :string
-#  description :string
-#  name        :string
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
+#  id            :bigint           not null, primary key
+#  color         :string
+#  description   :string
+#  name          :string
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  god_object_id :bigint
+#
+# Indexes
+#
+#  index_fruits_on_god_object_id  (god_object_id)
 #
 class Fruit < ApplicationRecord
   include PgSearch::Model
+
+  belongs_to :god_object, optional: true
+  has_many :vehicles
 
   has_many :vehicles
 
@@ -19,5 +27,6 @@ class Fruit < ApplicationRecord
                                                        description: 'B',
                                                        color: 'C' }
 
-  multisearchable against: [:name, :description, :color]
+  multisearchable(against: [:name, :description, :color],
+                  additional_attributes: -> (fruit) { { god_object_id: fruit.god_object_id } })
 end
