@@ -101,4 +101,52 @@ class SuperHeroTest < ActiveSupport::TestCase
       puts search_result_super_heroes
     end
   end
+
+  test "search works for a single Model, when, using a database query per associated record (NOT N+1)" do
+    #SETUP
+    SuperHero.delete_all
+    Vehicle.delete_all
+    PgSearch::Document.delete_all
+
+    batman = SuperHero.create!(name: "Batman", superpower: 'money')
+    wonder_woman = SuperHero.create!(name: "WonderWoman", superpower: 'strength of the amazon')
+    aqua_man = SuperHero.create!(name: "AquaMan", superpower: 'breathes water')
+
+    batmobile = Vehicle.create!(name: "Batmobile")
+    invisible_plane = Vehicle.create!(name: "Invisible Plane")
+
+    batmobile.super_heroes << batman
+    invisible_plane.super_heroes << [wonder_woman, aqua_man]
+
+    page_num = 1
+    pagination_count = 100
+    # search_documents = PgSearch.multisearch("Batman")
+    search_documents = PgSearch.multisearch("Batman").offset((page_num-1) * pagination_count).take(pagination_count)
+    superhero_direct_hit = SuperHero.where(id: search_documents.select{|search_doc| search_doc.searchable_type == "SuperHero"}.map(&:searchable_id))
+    superhero_vehicle_hit = SuperHero.where(id: search_documents.select{|search_doc| search_doc.searchable_type == "Vehicle"}.map(&:vehicle_superhero_id))
+
+    # superhero_fruit_hit = SuperHero.where(id: search_documents.where(searchable_type: "Fruit").map(&:fruit_superhero_id))
+
+    # services_direct_hit = Service.where(id: search_documents.where(searchable_type: "Service").map(&:service_id))
+    # services_repository_hit = Service.where(id: search_documents.where(searchable_type: "Repository").map(&:repository_service_id))
+    # services_team_hit = Service.where(id: search_documents.where(searchable_type: "Team").map(&:team_service_id))
+
+
+    payload_of_models_for_serializer = search_documents.map do |search_doc|
+      case search_doc.searchable_type
+      when "SuperHero"
+        superhero_direct_hit.select { id = search_doc.searchable_id }.first
+      when "Vehicle"
+        superhero_vehicle_hit.select { id = search_doc.superhero_vehicle_hit }.first
+        # when "Fruit"
+        #   services_team_hit.select{ id = search_doc.team_service_id}.first
+        # end
+      end
+    end
+
+    puts "payload_of_models_for_serializer"
+    puts payload_of_models_for_serializer.to_s
+  end
 end
+
+
